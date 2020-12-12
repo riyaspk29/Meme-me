@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     @IBOutlet weak var imagePickerView: UIImageView!
     @IBOutlet weak var topText: UITextField!
@@ -32,9 +32,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
         subscribeToKeybordNotifications()
         cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
-        
-        topText.delegate = memeTextFieldDelegate
-        bottomText.delegate = memeTextFieldDelegate
         
         restEditorView()
     }
@@ -62,6 +59,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             NSAttributedString.Key.font: UIFont(name: "HelveticaNeue-CondensedBlack", size: 40)!,
             NSAttributedString.Key.strokeWidth:  -3
         ]
+        
+        uITextField.delegate = memeTextFieldDelegate
        
         uITextField.defaultTextAttributes = memeTextAttributes
         uITextField.textAlignment = .center
@@ -98,8 +97,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     func unsubscribeFromKeybordNotifications(){
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.removeObserver(self)
     }
     
     @objc func keybordWillShow(_ notification:Notification){
@@ -121,24 +119,28 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     func generateMemedImage() -> UIImage {
         
-        toolBar.isHidden = true
-        navigationBar.isHidden = true
+        hideTopAndBottomBars(true)
         
         UIGraphicsBeginImageContext(self.view.frame.size)
         view.drawHierarchy(in: self.view.frame, afterScreenUpdates: true)
         let memedImage:UIImage = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()
         
-        toolBar.isHidden = false
-        navigationBar.isHidden = false
+        hideTopAndBottomBars(false)
 
         return memedImage
     }
+    
+    func hideTopAndBottomBars(_ hide: Bool) {
+        toolBar.isHidden = hide
+        navigationBar.isHidden = hide
+    }
+    
     @IBAction func shareMeme(_ sender: Any) {
         let image:UIImage = generateMemedImage()
         let controller = UIActivityViewController(activityItems: [image], applicationActivities: nil)
         controller.completionWithItemsHandler = {(activityType: UIActivity.ActivityType?, completed: Bool, returnedItems: [Any]?, error: Error?) in
-            if(completed){
+            if completed && error == nil{
                 self.save(memedImage: image)
             }
         }
