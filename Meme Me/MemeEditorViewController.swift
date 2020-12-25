@@ -18,6 +18,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     @IBOutlet weak var cameraButton: UIBarButtonItem!
     
     let memeTextFieldDelegate = MemeTextFieldDelegate()
+    var newMemDelegate:NewMemDelegate?
     
     enum FeildType: Int {
         case top = 1, bottom = 2
@@ -43,6 +44,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     
     @IBAction func cancelEdit(_ sender: Any) {
         restEditorView()
+        dimissEditor()
     }
     
     func restEditorView(){
@@ -149,7 +151,20 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     
     func save(memedImage:UIImage) {
         let meme = Meme(topText: topText.text!, bottomText: bottomText.text!, originalImage: imagePickerView.image, memedImage: memedImage)
-        print(meme)
+        
+        let object = UIApplication.shared.delegate
+        let appDelegate = object as! AppDelegate
+        appDelegate.memes.append(meme)
+        
+        dimissEditor()
+        newMemDelegate?.newMemAdded()
+    }
+    
+    func dimissEditor() {
+        dismiss(animated: true, completion: nil)
     }
 }
 
+protocol NewMemDelegate {
+    func newMemAdded()
+}
